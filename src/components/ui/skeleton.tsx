@@ -7,7 +7,7 @@ export function Skeleton({
   return (
     <div
       className={cn(
-        'animate-pulse-soft rounded-md bg-[var(--color-surface-2)]',
+        'animate-pulse-soft bg-[var(--color-surface-alt)] border border-[var(--color-border)]',
         className,
       )}
       {...props}

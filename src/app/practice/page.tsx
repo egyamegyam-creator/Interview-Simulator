@@ -1,28 +1,42 @@
 'use client';
 
-import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import * as React from 'react';
+import { Suspense } from 'react';
 import { toast } from 'sonner';
+import { DocHeader } from '@/components/layout/DocHeader';
 import { FeedbackPanel } from '@/components/practice/FeedbackPanel';
 import { ProgressSteps, type Stage } from '@/components/practice/ProgressSteps';
 import { QuestionCard } from '@/components/practice/QuestionCard';
 import { SetupForm, type SetupValues } from '@/components/practice/SetupForm';
-import type { GeneratedQuestion } from '@/lib/types';
+import type { GeneratedQuestion, QuestionType } from '@/lib/types';
 
 type SubmittedAnswer = {
   text?: string;
   selectedOptionId?: 'A' | 'B' | 'C' | 'D';
 };
 
-export default function PracticePage() {
+function isQuestionType(v: string | null): v is QuestionType {
+  return v === 'behavioral' || v === 'case' || v === 'situational';
+}
+
+function PracticeInner() {
+  const params = useSearchParams();
+  const initialType = isQuestionType(params.get('type'))
+    ? (params.get('type') as QuestionType)
+    : undefined;
+
   const [stage, setStage] = React.useState<Stage>('setup');
   const [settings, setSettings] = React.useState<SetupValues | null>(null);
-  const [question, setQuestion] = React.useState<GeneratedQuestion | null>(null);
-  const [submittedAnswer, setSubmittedAnswer] = React.useState<SubmittedAnswer>({});
+  const [question, setQuestion] = React.useState<GeneratedQuestion | null>(
+    null,
+  );
+  const [submittedAnswer, setSubmittedAnswer] = React.useState<SubmittedAnswer>(
+    {},
+  );
   const [feedback, setFeedback] = React.useState('');
   const [streaming, setStreaming] = React.useState(false);
   const [feedbackError, setFeedbackError] = React.useState<string | null>(null);
-
   const [loadingQuestion, setLoadingQuestion] = React.useState(false);
 
   async function generateQuestion(values: SetupValues) {
@@ -128,46 +142,75 @@ export default function PracticePage() {
     setFeedbackError(null);
   }
 
+  const stageLabel =
+    stage === 'setup' ? 'Configure' : stage === 'question' ? 'Answer' : 'Review';
+
   return (
-    <main>
-      <nav className="flex items-center justify-between py-2">
-        <Link href="/" className="flex items-center gap-2 text-sm font-semibold">
-          <span className="inline-block h-2.5 w-2.5 rounded-full bg-[var(--color-accent)]" />
-          <span>Interview Simulator</span>
-        </Link>
+    <>
+      <DocHeader
+        eyebrow="New Session"
+        title="Practice Console"
+        subtitle={`Stage · ${stageLabel}`}
+        meta={[
+          {
+            label: 'Category',
+            value: settings ? settings.type : '—',
+          },
+          {
+            label: 'Difficulty',
+            value: settings ? settings.difficulty : '—',
+          },
+          {
+            label: 'Mode',
+            value: settings ? settings.answerMode : '—',
+          },
+        ]}
+      />
+
+      <div className="mt-8 mb-8">
         <ProgressSteps stage={stage} />
-      </nav>
-
-      <div className="mt-8">
-        {stage === 'setup' && (
-          <SetupForm onSubmit={generateQuestion} loading={loadingQuestion} />
-        )}
-
-        {stage === 'question' && settings && question && (
-          <QuestionCard
-            type={settings.type}
-            difficulty={settings.difficulty}
-            answerMode={settings.answerMode}
-            question={question}
-            onSubmit={submitAnswer}
-            onBack={handleStartOver}
-            submitting={streaming}
-          />
-        )}
-
-        {stage === 'feedback' && settings && question && (
-          <FeedbackPanel
-            type={settings.type}
-            question={question}
-            submittedAnswer={submittedAnswer}
-            feedback={feedback}
-            streaming={streaming}
-            error={feedbackError}
-            onNewSameSettings={handleNewSameSettings}
-            onStartOver={handleStartOver}
-          />
-        )}
       </div>
-    </main>
+
+      {stage === 'setup' && (
+        <SetupForm
+          onSubmit={generateQuestion}
+          loading={loadingQuestion}
+          initialType={initialType}
+        />
+      )}
+
+      {stage === 'question' && settings && question && (
+        <QuestionCard
+          type={settings.type}
+          difficulty={settings.difficulty}
+          answerMode={settings.answerMode}
+          question={question}
+          onSubmit={submitAnswer}
+          onBack={handleStartOver}
+          submitting={streaming}
+        />
+      )}
+
+      {stage === 'feedback' && settings && question && (
+        <FeedbackPanel
+          type={settings.type}
+          question={question}
+          submittedAnswer={submittedAnswer}
+          feedback={feedback}
+          streaming={streaming}
+          error={feedbackError}
+          onNewSameSettings={handleNewSameSettings}
+          onStartOver={handleStartOver}
+        />
+      )}
+    </>
+  );
+}
+
+export default function PracticePage() {
+  return (
+    <Suspense fallback={<div className="py-8 text-sm text-[var(--color-muted)]">Loading…</div>}>
+      <PracticeInner />
+    </Suspense>
   );
 }

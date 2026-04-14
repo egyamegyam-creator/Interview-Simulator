@@ -1,9 +1,9 @@
 import { cn } from '@/lib/utils';
 
 const steps = [
-  { key: 'setup', label: 'Setup' },
-  { key: 'question', label: 'Question' },
-  { key: 'feedback', label: 'Feedback' },
+  { key: 'setup', label: 'Configure' },
+  { key: 'question', label: 'Answer' },
+  { key: 'feedback', label: 'Review' },
 ] as const;
 
 export type Stage = (typeof steps)[number]['key'];
@@ -11,37 +11,41 @@ export type Stage = (typeof steps)[number]['key'];
 export function ProgressSteps({ stage }: { stage: Stage }) {
   const currentIdx = steps.findIndex((s) => s.key === stage);
   return (
-    <ol className="flex items-center gap-2 text-sm">
+    <ol className="flex items-center gap-6">
       {steps.map((s, i) => {
         const active = i === currentIdx;
         const complete = i < currentIdx;
         return (
-          <li key={s.key} className="flex items-center gap-2">
+          <li key={s.key} className="flex items-center gap-3">
             <span
               className={cn(
-                'flex h-6 w-6 items-center justify-center rounded-full border text-xs font-semibold',
+                'flex h-6 w-6 items-center justify-center text-[0.65rem] font-bold',
                 active &&
-                  'bg-[var(--color-accent)] border-[var(--color-accent)] text-[#0b0d12]',
+                  'bg-[var(--color-sidebar)] text-white',
                 complete &&
-                  'bg-[var(--color-surface-2)] border-[var(--color-success)] text-[var(--color-success)]',
+                  'bg-[var(--color-surface-alt)] text-[var(--color-accent)] border border-[var(--color-accent)]',
                 !active &&
                   !complete &&
-                  'border-[var(--color-border)] text-[var(--color-muted)]',
+                  'border border-[var(--color-border-strong)] text-[var(--color-muted)]',
               )}
             >
-              {complete ? '✓' : i + 1}
+              {complete ? '✓' : `0${i + 1}`}
             </span>
             <span
               className={cn(
+                'text-[0.7rem] font-bold uppercase tracking-[0.14em]',
                 active
-                  ? 'text-[var(--color-text)] font-medium'
+                  ? 'text-[var(--color-text)]'
                   : 'text-[var(--color-muted)]',
               )}
             >
               {s.label}
             </span>
             {i < steps.length - 1 && (
-              <span className="mx-2 h-px w-6 bg-[var(--color-border)]" />
+              <span
+                aria-hidden
+                className="ml-2 h-px w-8 bg-[var(--color-border-strong)]"
+              />
             )}
           </li>
         );

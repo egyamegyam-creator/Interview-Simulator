@@ -38,7 +38,7 @@ export function TabsList({
     <div
       role="tablist"
       className={cn(
-        'inline-flex rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-2)] p-1 gap-1',
+        'inline-flex border border-[var(--color-border-strong)] bg-[var(--color-surface)]',
         className,
       )}
     >
@@ -66,9 +66,9 @@ export function TabsTrigger({
       aria-selected={active}
       onClick={() => ctx.setValue(value)}
       className={cn(
-        'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+        'border-l border-[var(--color-border-strong)] first:border-l-0 px-4 py-2 text-[0.7rem] font-bold uppercase tracking-[0.14em] transition-colors',
         active
-          ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow'
+          ? 'bg-[var(--color-sidebar)] text-white'
           : 'text-[var(--color-muted)] hover:text-[var(--color-text)]',
         className,
       )}
