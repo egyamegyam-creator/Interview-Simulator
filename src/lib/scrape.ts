@@ -100,14 +100,15 @@ export function extractReadableText(html: string): string {
     'script, style, noscript, nav, header, footer, form, iframe, svg, aside, button',
   ).remove();
 
-  // Prefer <main> or the most text-heavy <article>; fall back to body.
-  // If none exist, $('body').text() returns '' and the length guard below fires.
-  let root = $('main').first();
-  if (root.length === 0) root = $('article').first();
-  if (root.length === 0) root = $('body');
+  // Prefer content in <main>, then <article>, then <body>.
+  // Computing .text() on each sidesteps Cheerio's generic-type mismatch
+  // across <Element>/<Document>/<AnyNode> and keeps the fallback logic flat.
+  const raw =
+    $('main').first().text().trim() ||
+    $('article').first().text().trim() ||
+    $('body').text().trim();
 
-  const text = root
-    .text()
+  const text = raw
     .replace(/\u00A0/g, ' ')
     .replace(/[ \t]+/g, ' ')
     .replace(/\n{3,}/g, '\n\n')
