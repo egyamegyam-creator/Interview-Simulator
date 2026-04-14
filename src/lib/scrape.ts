@@ -100,11 +100,11 @@ export function extractReadableText(html: string): string {
     'script, style, noscript, nav, header, footer, form, iframe, svg, aside, button',
   ).remove();
 
-  // Prefer <main> or the most text-heavy <article>/<section>; fall back to body.
+  // Prefer <main> or the most text-heavy <article>; fall back to body.
+  // If none exist, $('body').text() returns '' and the length guard below fires.
   let root = $('main').first();
   if (root.length === 0) root = $('article').first();
   if (root.length === 0) root = $('body');
-  if (root.length === 0) root = $.root();
 
   const text = root
     .text()
